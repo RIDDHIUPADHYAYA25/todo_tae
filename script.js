@@ -1,125 +1,123 @@
 // ---------------- Auth ----------------
-async function registerUser() {
-  const username = document.getElementById("reg-username").value;
-  const password = document.getElementById("reg-password").value;
+function register() {
+  const username = document.getElementById("username").value;
+  const password = document.getElementById("password").value;
+  if (!username || !password) return alert("Fill both fields");
 
-  const res = await fetch("/api/register", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, password })
-  });
+  const users = JSON.parse(localStorage.getItem("users") || "{}");
+  if (users[username]) return alert("User already exists");
 
-  const data = await res.json();
-  if (res.ok) {
-    alert("Registration successful! Please login.");
-    window.location.href = "/login"; // redirect to login page
-  } else {
-    alert(data.error);
-  }
+  users[username] = password;
+  localStorage.setItem("users", JSON.stringify(users));
+  alert("Registered! Please login.");
 }
 
-async function loginUser() {
-  const username = document.getElementById("login-username").value;
-  const password = document.getElementById("login-password").value;
+function login() {
+  const username = document.getElementById("username").value;
+  const password = document.getElementById("password").value;
+  const users = JSON.parse(localStorage.getItem("users") || "{}");
 
-  const res = await fetch("/api/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, password })
-  });
-
-  const data = await res.json();
-  if (res.ok) {
-    alert("Login successful!");
-    window.location.href = "/"; // redirect to main app
+  if (users[username] === password) {
+    localStorage.setItem("loggedInUser", username);
+    document.getElementById("auth").style.display = "none";
+    document.getElementById("app").style.display = "block";
+    loadTasks();
   } else {
-    alert(data.error);
+    alert("Invalid credentials");
   }
 }
 
 // ---------------- Tasks ----------------
-async function loadTasks() {
-  const res = await fetch("/api/tasks");
-  const tasks = await res.json();
+function loadTasks() {
+  const username = localStorage.getItem("loggedInUser");
+  if (!username) return;
 
+  const tasks = JSON.parse(localStorage.getItem(`tasks_${username}`) || "[]");
   const taskList = document.getElementById("taskList");
-  if (!taskList) return;
   taskList.innerHTML = "";
 
-  tasks.forEach(task => {
+  tasks.forEach((task, index) => {
     const card = document.createElement("div");
     card.className = "task-card";
-
     card.innerHTML = `
       <h3>${task.task}</h3>
       <div class="task-meta">Deadline: ${task.deadline || "No deadline"}</div>
       <div class="task-actions">
-        <select onchange="toggleStatus(${task.id}, this.value)">
+        <select onchange="toggleStatus(${index}, this.value)">
           <option value="pending" ${task.status === "pending" ? "selected" : ""}>Pending</option>
           <option value="done" ${task.status === "done" ? "selected" : ""}>Done</option>
         </select>
-        <button onclick="deleteTask(${task.id})">✖</button>
+        <button onclick="deleteTask(${index})">✖</button>
       </div>
     `;
-
     taskList.appendChild(card);
   });
 
   updateProgress(tasks);
 }
 
-// Add a new task
-const taskForm = document.getElementById("taskForm");
-if (taskForm) {
-  taskForm.addEventListener("submit", async e => {
-    e.preventDefault();
-    const taskInput = document.getElementById("taskInput");
-    const deadlineInput = document.getElementById("deadlineInput");
+document.getElementById("taskForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const taskInput = document.getElementById("taskInput");
+  const deadlineInput = document.getElementById("deadlineInput");
+  const username = localStorage.getItem("loggedInUser");
 
-    if (!taskInput.value) return alert("Enter a task!");
+  if (!taskInput.value || !username) return;
 
-    await fetch("/api/add_task", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        task: taskInput.value,
-        deadline: deadlineInput.value
-      })
-    });
+  const tasks = JSON.parse(localStorage.getItem(`tasks_${username}`) || "[]");
+  tasks.push({ task: taskInput.value, deadline: deadlineInput.value, status: "pending" });
+  localStorage.setItem(`tasks_${username}`, JSON.stringify(tasks));
 
-    taskInput.value = "";
-    deadlineInput.value = "";
-    loadTasks();
-  });
-}
+  taskInput.value = "";
+  deadlineInput.value = "";
+  loadTasks();
+});
 
-// Toggle task status
-async function toggleStatus(id, newStatus) {
-  await fetch(`/api/update_task/${id}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ status: newStatus })
-  });
+function toggleStatus(index, newStatus) {
+  const username = localStorage.getItem("loggedInUser");
+  const tasks = JSON.parse(localStorage.getItem(`tasks_${username}`) || "[]");
+  tasks[index].status = newStatus;
+  localStorage.setItem(`tasks_${username}`, JSON.stringify(tasks));
   loadTasks();
 }
 
-// Delete a task
-async function deleteTask(id) {
-  await fetch(`/api/delete_task/${id}`, { method: "DELETE" });
+function deleteTask(index) {
+  const username = localStorage.getItem("loggedInUser");
+  const tasks = JSON.parse(localStorage.getItem(`tasks_${username}`) || "[]");
+  tasks.splice(index, 1);
+  localStorage.setItem(`tasks_${username}`, JSON.stringify(tasks));
   loadTasks();
 }
 
-// Progress bar update
 function updateProgress(tasks) {
   const progressBar = document.getElementById("progressBar");
-  if (!progressBar) return;
   const total = tasks.length;
   const done = tasks.filter(t => t.status === "done").length;
   const percent = total ? (done / total) * 100 : 0;
   progressBar.style.width = percent + "%";
 }
 
-// Auto-load tasks if on index.html
-if (document.getElementById("taskList")) {
-  loadTasks();
-}
+// ---------------- Dark Mode ----------------
+document.getElementById("toggleMode").addEventListener("click", () => {
+  document.body.classList.toggle("dark-mode");
+});
+
+// ---------------- Logout ----------------
+document.getElementById("logoutBtn").addEventListener("click", () => {
+  localStorage.removeItem("loggedInUser");
+  document.getElementById("app").style.display = "none";
+  document.getElementById("auth").style.display = "flex";
+});
+
+// ---------------- Auto Login ----------------
+window.onload = () => {
+  const user = localStorage.getItem("loggedInUser");
+  if (user) {
+    document.getElementById("auth").style.display = "none";
+    document.getElementById("app").style.display = "block";
+    loadTasks();
+  } else {
+    document.getElementById("auth").style.display = "flex";
+    document.getElementById("app").style.display = "none";
+  }
+};
