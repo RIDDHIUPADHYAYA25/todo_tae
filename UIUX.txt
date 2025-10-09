@@ -1,0 +1,32 @@
+ Project Goal
+Design a responsive, intuitive, and visually appealing To-Do application that helps users manage tasks efficiently with minimal friction.
+
+🧠 User Experience (UX) Principles
+- Simplicity First: Minimalist layout with clear task hierarchy.
+- Fast Interactions: Instant feedback on actions (e.g., adding, deleting, completing tasks).
+- Accessibility: Keyboard navigation, readable fonts, and color contrast for visibility.
+- Delightful Microinteractions: Subtle animations for task completion and alerts using SweetAlert2 and AOS.
+
+🎨 User Interface (UI) Elements
+- Task Input Field: Prominently placed at the top with placeholder text and clear CTA button.
+- Task Cards: Each task displayed in a card with checkbox, edit, and delete icons (Font Awesome).
+- Filters: Tabs or dropdown to switch between All, Completed, and Pending tasks.
+- Theme: Soft gradient background with Bootstrap styling for consistency and responsiveness.
+- Animations: Entry/exit transitions for tasks using AOS; alerts for actions using SweetAlert2.
+
+📱 Responsive Design
+- Mobile-first layout using Bootstrap grid.
+- Adaptive font sizes and button spacing.
+- Hamburger menu for navigation on smaller screens.
+
+🧩 Third-Party Libraries Used
+- Bootstrap – Layout and responsive design.
+- Font Awesome – Icons for task actions.
+- SweetAlert2 – Custom alerts for task actions.
+- AOS (Animate on Scroll) – Smooth animations for task transitions.
+
+🔍 Future Enhancements
+- Add drag-and-drop for task reordering.
+- Implement user authentication for personalized task lists.
+- Add due dates, reminders, and priority tags.
+- Dark mode toggle.
