@@ -3,21 +3,31 @@
 <head>
   <meta charset="UTF-8">
   <title>To-Do List Manager</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="app">
+  <!-- Auth Section -->
+  <div id="auth">
+    <h2>Welcome</h2>
+    <input type="text" id="username" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="register()">Register</button>
+    <button onclick="login()">Login</button>
+  </div>
+
+  <!-- App Section -->
+  <div id="app" style="display:none;">
     <div class="header">
       <h2>🧠 To-Do List Manager</h2>
       <div class="header-actions">
         <button id="toggleMode">🌙 Dark Mode</button>
-        <a href="/logout" class="logout">🚪 Logout</a>
+        <button id="logoutBtn" class="logout">🚪 Logout</button>
       </div>
     </div>
 
     <form id="taskForm" class="task-form">
       <input type="text" id="taskInput" placeholder="Enter Task" required>
-      <input type="date" id="deadlineInput" placeholder="dd-mm-yyyy">
+      <input type="date" id="deadlineInput">
       <button type="submit">Add Task</button>
     </form>
 
@@ -30,6 +40,6 @@
     <div id="taskList" class="task-list"></div>
   </div>
 
-  <script src="{{ url_for('static', filename='script.js') }}"></script>
+  <script src="script.js"></script>
 </body>
 </html>
